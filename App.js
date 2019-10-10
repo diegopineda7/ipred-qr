@@ -12,7 +12,8 @@ export default class App extends Component {
       nombre: '',
       cedula: '',
       enlaceRecibo: '',
-      fila: ''
+      fila: '',
+      url: 'http://10.14.46.167:3000'
     };
   }
 
@@ -30,17 +31,17 @@ export default class App extends Component {
     else {
       if (consulta.valorPago !== undefined)
       this.setState({
-        texto: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)} con ${consulta.tipoDocumento.toLowerCase()} número ${consulta.numeroDocumento} registra pago con valor de ${consulta.valorPago}.`, 
+        texto: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)} con ${consulta.tipoDocumento.toLowerCase()} número ${consulta.numeroDocumento} registra pago con valor de ${consulta.valorPago}.`
+      });
+      else
+      this.setState({
+        texto: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)} con ${consulta.tipoDocumento.toLowerCase()} número ${consulta.numeroDocumento} registra pago sin valor establecido.`
+      });
+      this.setState({
         nombre: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)}`,
         cedula: consulta.numeroDocumento,
         enlaceRecibo: consulta.enlaceRecibo,
         fila: consulta.fila
-      });
-      else
-      this.setState({
-        texto: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)} con ${consulta.tipoDocumento.toLowerCase()} número ${consulta.numeroDocumento} registra pago sin valor establecido.`, 
-        cedula: consulta.numeroDocumento,
-        enlaceRecibo: consulta.enlaceRecibo
       });
     } 
     
@@ -50,7 +51,7 @@ export default class App extends Component {
 
   verificarRegistro = async cedula => {
     var respuesta = {};
-    await fetch('http://10.14.9.22:3000/consultar', {
+    await fetch(`${this.state.url}/consultar`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -68,7 +69,7 @@ export default class App extends Component {
   }
 
   registrarAsistencia = async () => {
-    await fetch('http://10.14.9.22:3000/asistencia', {
+    await fetch(`${this.state.url}/asistencia`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
