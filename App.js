@@ -13,7 +13,8 @@ export default class App extends Component {
       cedula: '',
       enlaceRecibo: '',
       fila: '',
-      url: 'http://10.14.46.167:3000'
+      // url: 'http://10.14.45.9:3000',
+      url: 'http://200.16.118.25/chatbot'
     };
   }
 
@@ -27,26 +28,34 @@ export default class App extends Component {
 
   leerCodigo = async code => {
     const consulta = await this.verificarRegistro(code.data);
-    if(consulta.vacio) this.setState({texto: consulta.vacio});
+    if (consulta.vacio) this.setState({
+      texto: consulta.vacio,
+      cedula: code.data
+    });
     else {
-      if (consulta.valorPago !== undefined)
       this.setState({
-        texto: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)} con ${consulta.tipoDocumento.toLowerCase()} número ${consulta.numeroDocumento} registra pago con valor de ${consulta.valorPago}.`
-      });
-      else
-      this.setState({
-        texto: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)} con ${consulta.tipoDocumento.toLowerCase()} número ${consulta.numeroDocumento} registra pago sin valor establecido.`
-      });
-      this.setState({
+        texto: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)} con ${consulta.tipoDocumento.toLowerCase()} número ${consulta.numeroDocumento}.`,
         nombre: `${this.formatearNombre(consulta.nombres + ' ' + consulta.apellidos)}`,
         cedula: consulta.numeroDocumento,
         enlaceRecibo: consulta.enlaceRecibo,
         fila: consulta.fila
       });
     } 
-    
-    this.state.enlaceRecibo === undefined ? this.setModalVacioVisible(true) : this.setModalExitoVisible(true);
+    this.state.enlaceRecibo === '' ? this.setModalVacioVisible(true) : this.setModalExitoVisible(true);
     await this.verificarRegistro(code.data);
+  }
+
+  leerNuevoCodigo = () => {
+    this.setState({
+      modalExito: false,
+      modalVacio: false,
+      texto: '',
+      nombre: '',
+      cedula: '',
+      enlaceRecibo: '',
+      fila: ''
+    });
+    this.scanner.reactivate();
   }
 
   verificarRegistro = async cedula => {
@@ -76,7 +85,6 @@ export default class App extends Component {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        cedula: this.state.nombre,
         fila: this.state.fila
       }),
     })
@@ -90,8 +98,7 @@ export default class App extends Component {
             {
               text: 'Leer nuevo código',
               onPress: () => {
-                this.setModalExitoVisible(!this.state.modalExito);
-                this.scanner.reactivate();
+                this.leerNuevoCodigo();
               },
               style: 'default'
             }
@@ -119,10 +126,6 @@ export default class App extends Component {
           animationType = 'slide'
           transparent = {false}
           visible = {this.state.modalExito}
-          onRequestClose = {() => {
-            this.setModalExitoVisible(!this.state.modalExito);
-            this.scanner.reactivate();
-          }}
         >
           <View style = {styles.modal}>
             <Text style = {styles.titulo}>Lectura exitosa</Text>
@@ -142,8 +145,7 @@ export default class App extends Component {
             <TouchableOpacity
               style = {styles.botonVolver}
               onPress = {() => {
-                this.setModalExitoVisible(!this.state.modalExito);
-                this.scanner.reactivate();
+                this.leerNuevoCodigo();
               }}
             >
               <Text style = {styles.botonVolverText}>Leer nuevo código</Text>
@@ -156,19 +158,19 @@ export default class App extends Component {
           animationType = 'slide'
           transparent = {false}
           visible = {this.state.modalVacio}
-          onRequestClose = {() => {
-            this.setModalVacioVisible(!this.state.modalVacio);
-            this.scanner.reactivate();
-          }}
         >
           <View style = {styles.modal}>
             <Text style = {styles.titulo}>No existe el registro</Text>
             <Text style = {styles.respuesta}>{this.state.texto}</Text>
             <TouchableOpacity
               style = {styles.botonVolver}
+              onPress = {() => Linking.openURL(`${this.state.url}/registrar`)}>
+              <Text style = {styles.botonVolverText}>Crear registro</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style = {styles.botonVolver}
               onPress = {() => {
-                this.setModalVacioVisible(!this.state.modalVacio);
-                this.scanner.reactivate();
+                this.leerNuevoCodigo();
               }}>
               <Text style = {styles.botonVolverText}>Leer nuevo código</Text>
             </TouchableOpacity>
